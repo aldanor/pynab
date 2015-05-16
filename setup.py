@@ -23,7 +23,8 @@ setup(
         'py',
         'toolz',
         'enum34',
-        'schematics'
+        'schematics',
+        'dateparser'
     ],
     classifiers=[
         'License :: OSI Approved :: BSD License',

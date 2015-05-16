@@ -4,6 +4,7 @@ import six
 import toolz
 import collections
 from enum import Enum
+from dateparser.date import DateDataParser
 
 from . import schema
 
@@ -343,6 +344,23 @@ class Categories(ModelCollection):
 
 class Transactions(ModelCollection):
     _model_type = Transaction
+
+    def between(self, start=None, end=None):
+        parser = DateDataParser()
+        transactions = list(self)
+        if start is not None:
+            start = parser.get_date_data(start)['date_obj'].date()
+            transactions = [t for t in transactions if t.date >= start]
+        if end is not None:
+            end = parser.get_date_data(end)['date_obj'].date()
+            transactions = [t for t in transactions if t.end <= end]
+        return type(self)(transactions)
+
+    def since(self, date):
+        return self.between(start=date)
+
+    def till(self, date):
+        return self.between(end=date)
 
 
 class SubTransactions(ModelCollection):
