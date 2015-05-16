@@ -90,15 +90,15 @@ class Account(Model):
 
     @property
     def payees(self):
-        return self._ynab.payees.by_field('target_account', self)
+        return self._ynab.payees.filter('target_account', self)
 
     @property
     def transactions(self):
-        return self._ynab.transactions.by_field('account', self)
+        return self._ynab.transactions.filter('account', self)
 
     @property
     def inbound_transactions(self):
-        return self._ynab.transactions.by_field('target_account', self)
+        return self._ynab.transactions.filter('target_account', self)
 
     @property
     def balance(self):
@@ -106,7 +106,7 @@ class Account(Model):
 
     @property
     def cleared_balance(self):
-        return round(sum(self.transactions.by_field('cleared', True).amount), 3)
+        return round(sum(self.transactions.filter('cleared', True).amount), 3)
 
 
 class Payee(Model):
@@ -129,7 +129,7 @@ class Payee(Model):
 
     @property
     def transactions(self):
-        return self._ynab.transactions.by_field('payee', self)
+        return self._ynab.transactions.filter('payee', self)
 
 
 class CategoryModel(Model):
@@ -318,7 +318,7 @@ class ModelCollection(collections.Sequence):
     def sort_by(self, field):
         self._elements = sorted(self._elements, key=lambda element: getattr(element, field))
 
-    def by_field(self, field, value):
+    def filter(self, field, value):
         return type(self)(element for element in self if getattr(element, field) == value)
 
 

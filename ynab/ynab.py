@@ -1,24 +1,94 @@
 # -*- coding: utf-8 -*-
 
+import re
+import os
 import json
-import py.path
+import string
 
 from .models import Accounts, Payees, MasterCategories, Transactions, Categories
 
 
 class YNAB(object):
-    def __init__(self, data):
+    def __init__(self, path, budget, device=None):
+        """
+        Load YNAB budget from the specified path.
+
+        Parameters
+        ----------
+        path : str
+            Path to the budget root, e.g. ~/Documents/YNAB for local budgets or ~/Dropbox/YNAB
+            for cloud-synced budgets.
+        budget : str
+            Budget name.
+        device : str (optional)
+            Device name -- this corresponds to the .ydevice files in the "devices" folder.
+            Can be either A, B, C, ... or a full device name (hostname for desktops). The
+            full name can be found in .ydevice files in the "devices" folder. If this
+            parameter is not specified, the device with the latest modification time will
+            be selected.
+        """
+        root = os.path.abspath(os.path.expanduser(path))
+        pattern = re.compile('^' + budget + r'~[A-F0-9]{8}\.ynab4$')
+        folders = list(filter(pattern.match, os.listdir(root)))
+        if not folders:
+            raise RuntimeError('Budget {!r} not found at: {}'.format(budget, path))
+        if len(folders) > 1:
+            raise RuntimeError('Multiple budgets {!r} found at: {}'.format(budget, path))
+        budget_folder = os.path.join(root, folders.pop())
+        meta = os.path.join(budget_folder, 'Budget.ymeta')
+        with open(meta, 'r') as f:
+            data_folder = os.path.join(budget_folder, json.load(f)['relativeDataFolderName'])
+        devices_folder = os.path.join(data_folder, 'devices')
+        device_files = filter(re.compile(r'^[A-Z]\.ydevice$').match, os.listdir(devices_folder))
+        devices = []
+        for device_file in device_files:
+            with open(os.path.join(devices_folder, device_file), 'r') as f:
+                device_data = json.load(f)
+            devices.append({
+                'id': device_data['shortDeviceId'],
+                'name': device_data['friendlyName'],
+                'guid': device_data['deviceGUID'],
+                'mtime': os.stat(os.path.join(devices_folder, device_file)).st_mtime
+            })
+        if not devices:
+            raise RuntimeError('No devices found for budget {!r} at: {}'.format(budget, path))
+        if device is None:
+            device = max(devices, key=lambda d: d['mtime'])
+        else:
+            try:
+                if device in string.ascii_uppercase:
+                    device = [d for d in devices if d['id'] == device].pop()
+                else:
+                    device = [d for d in devices if d['name'] == device].pop()
+            except IndexError:
+                raise RuntimeError('No device {!r} for {!r} at: {}'.format(device, budget, path))
+        budget_file = os.path.join(data_folder, device['guid'], 'Budget.yfull')
+        with open(budget_file, 'r') as f:
+            self._init_data(json.load(f))
+
+    @classmethod
+    def from_json(cls, data):
+        """
+        Instantiate YNAB object directly from raw JSON data.
+
+        Parameters
+        ----------
+        data : dict
+
+        Returns
+        -------
+        ynab : YNAB
+        """
+        instance = object.__new__(cls)
+        instance._init_data(data)
+        return instance
+
+    def _init_data(self, data):
         self._accounts = Accounts._from_flat(self, data['accounts'])
         self._payees = Payees._from_flat(self, data['payees'])
         self._master_categories = MasterCategories._from_flat(self, data['masterCategories'])
         self._transactions = Transactions._from_flat(self, data['transactions'])
         self._transactions.sort_by('date')
-
-    @classmethod
-    def load(cls, path, budget):
-        files = py.path.local(path).visit('{}*.ynab4/data*/*/Budget.yfull'.format(budget))
-        data = json.load(max(files, key=lambda f: f.mtime()).open())
-        return cls(data)
 
     @property
     def accounts(self):

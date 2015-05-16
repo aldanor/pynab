@@ -20,7 +20,6 @@ setup(
     description='A simple API providing native Python access to YNAB data.',
     install_requires=[
         'six',
-        'py',
         'toolz',
         'enum34',
         'schematics',
