@@ -26,6 +26,12 @@ class CategoryType(Enum):
     OUTFLOW = 'OUTFLOW'
 
 
+class TransactionStatus(Enum):
+    CLEARED = 'Cleared'
+    RECONCILED = 'Reconciled'
+    UNCLEARED = 'Uncleared'
+
+
 class Model(object):
     _entity_type = None
 
@@ -95,7 +101,11 @@ class Account(Model):
 
     @property
     def balance(self):
-        return round(sum(t.amount for t in self.transactions), 3)
+        return round(sum(self.transactions.amount), 3)
+
+    @property
+    def cleared_balance(self):
+        return round(sum(self.transactions.by_field('cleared', True).amount), 3)
 
 
 class Payee(Model):
@@ -234,8 +244,16 @@ class Transaction(TransactionModel):
         return self._entity.date
 
     @property
+    def status(self):
+        return TransactionStatus(self._entity.cleared)
+
+    @property
     def cleared(self):
-        return self._entity.cleared
+        return self.status in (TransactionStatus.CLEARED, TransactionStatus.RECONCILED)
+
+    @property
+    def reconciled(self):
+        return self.status == TransactionStatus.RECONCILED
 
     @property
     def accepted(self):
