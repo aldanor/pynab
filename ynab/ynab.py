@@ -24,8 +24,8 @@ class YNAB(object):
             Device name -- this corresponds to the .ydevice files in the "devices" folder.
             Can be either A, B, C, ... or a full device name (hostname for desktops). The
             full name can be found in .ydevice files in the "devices" folder. If this
-            parameter is not specified, the device with the latest modification time will
-            be selected.
+            parameter is not specified, the device with the latest modification time of
+            the budget file will be selected.
         """
         root = os.path.abspath(os.path.expanduser(path))
         pattern = re.compile('^' + budget + r'~[A-F0-9]{8}\.ynab4$')
@@ -44,14 +44,17 @@ class YNAB(object):
         for device_file in device_files:
             with open(os.path.join(devices_folder, device_file), 'r') as f:
                 device_data = json.load(f)
-            devices.append({
-                'id': device_data['shortDeviceId'],
-                'name': device_data['friendlyName'],
-                'guid': device_data['deviceGUID'],
-                'mtime': os.stat(os.path.join(devices_folder, device_file)).st_mtime
-            })
+            guid = device_data['deviceGUID']
+            budget_file = os.path.join(data_folder, guid, 'Budget.yfull')
+            if os.path.isfile(budget_file):
+                devices.append({
+                    'id': device_data['shortDeviceId'],
+                    'name': device_data['friendlyName'],
+                    'file': budget_file,
+                    'mtime': os.stat(budget_file).st_mtime
+                })
         if not devices:
-            raise RuntimeError('No devices found for budget {!r} at: {}'.format(budget, path))
+            raise RuntimeError('No valid devices found for {!r} at: {}'.format(budget, path))
         if device is None:
             device = max(devices, key=lambda d: d['mtime'])
         else:
@@ -62,9 +65,22 @@ class YNAB(object):
                     device = [d for d in devices if d['name'] == device].pop()
             except IndexError:
                 raise RuntimeError('No device {!r} for {!r} at: {}'.format(device, budget, path))
-        budget_file = os.path.join(data_folder, device['guid'], 'Budget.yfull')
-        with open(budget_file, 'r') as f:
+        self._path = device['file']
+        self._device = device['name']
+        with open(self._path, 'r') as f:
             self._init_data(json.load(f))
+
+    @property
+    def path(self):
+        if not hasattr(self, '_path'):
+            return None
+        return self._path
+
+    @property
+    def device(self):
+        if not hasattr(self, '_device'):
+            return None
+        return self._device
 
     @classmethod
     def from_json(cls, data):
