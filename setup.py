@@ -22,6 +22,7 @@ setup(
         'six',
         'py',
         'toolz',
+        'enum34',
         'schematics'
     ],
     classifiers=[
