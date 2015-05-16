@@ -284,6 +284,9 @@ class ModelCollection(collections.Sequence):
         else:
             return self._elements[key]
 
+    def __getattr__(self, key):
+        return [getattr(element, key) for element in self]
+
     def __repr__(self):
         return repr(self._elements)
 
