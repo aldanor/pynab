@@ -21,6 +21,7 @@ setup(
     install_requires=[
         'six',
         'py',
+        'toolz',
         'schematics'
     ],
     classifiers=[

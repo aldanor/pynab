@@ -3,7 +3,7 @@
 import json
 import py.path
 
-from models import Accounts, Payees, MasterCategories, Transactions, Categories
+from .models import Accounts, Payees, MasterCategories, Transactions, Categories
 
 
 class YNAB(object):

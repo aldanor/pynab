@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ynab import models
-from ynab import schema
+from .ynab import YNAB
 
-from ynab.ynab import YNAB
-
-__all__ = ['YNAB', 'schema', 'models']
+__all__ = ['YNAB']

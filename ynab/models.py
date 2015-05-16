@@ -5,7 +5,7 @@ import toolz
 import collections
 from enum import Enum
 
-from ynab import schema
+from . import schema
 
 
 class AccountType(Enum):
@@ -45,62 +45,6 @@ class Model(object):
     @property
     def is_valid(self):
         return not self._entity.isTombstone
-
-
-class CategoryModel(Model):
-    @property
-    def name(self):
-        return self._entity.name
-
-    @property
-    def type(self):
-        return CategoryType(self._entity.type)
-
-
-class Category(CategoryModel):
-    _entity_type = schema.SubCategory
-
-    def __repr__(self):
-        return '<Category: {}>'.format(self.full_name)
-
-    @property
-    def cached_balance(self):
-        return self._entity.cachedBalance
-
-    @property
-    def master_category(self):
-        return self._ynab.master_categories.by_id(self._entity.masterCategoryId)
-
-    @property
-    def has_unresolved_conflicts(self):
-        return not self._entity.isResolvedConflict
-
-    @property
-    def note(self):
-        return self._entity.note
-
-    @property
-    def full_name(self):
-        return '{}/{}'.format(self.master_category.name, self.name)
-
-
-class MasterCategory(CategoryModel):
-    _entity_type = schema.MasterCategory
-
-    def __init__(self, ynab, entity):
-        super(MasterCategory, self).__init__(ynab, entity)
-        self._categories = Categories(
-            Category(ynab, category) for category in self._entity.subCategories or [])
-
-    def __repr__(self):
-        return '<MasterCategory: {}>'.format(self.name)
-
-    @property
-    def categories(self):
-        return self._categories
-
-    def __iter__(self):
-        return iter(self._categories)
 
 
 class Account(Model):
@@ -175,6 +119,62 @@ class Payee(Model):
     @property
     def transactions(self):
         return self._ynab.transactions.by_field('payee', self)
+
+
+class CategoryModel(Model):
+    @property
+    def name(self):
+        return self._entity.name
+
+    @property
+    def type(self):
+        return CategoryType(self._entity.type)
+
+
+class Category(CategoryModel):
+    _entity_type = schema.SubCategory
+
+    def __repr__(self):
+        return '<Category: {}>'.format(self.full_name)
+
+    @property
+    def cached_balance(self):
+        return self._entity.cachedBalance
+
+    @property
+    def master_category(self):
+        return self._ynab.master_categories.by_id(self._entity.masterCategoryId)
+
+    @property
+    def has_unresolved_conflicts(self):
+        return not self._entity.isResolvedConflict
+
+    @property
+    def note(self):
+        return self._entity.note
+
+    @property
+    def full_name(self):
+        return '{}/{}'.format(self.master_category.name, self.name)
+
+
+class MasterCategory(CategoryModel):
+    _entity_type = schema.MasterCategory
+
+    def __init__(self, ynab, entity):
+        super(MasterCategory, self).__init__(ynab, entity)
+        self._categories = Categories(
+            Category(ynab, category) for category in self._entity.subCategories or [])
+
+    def __repr__(self):
+        return '<MasterCategory: {}>'.format(self.name)
+
+    @property
+    def categories(self):
+        return self._categories
+
+    def __iter__(self):
+        return iter(self._categories)
 
 
 class TransactionModel(Model):
