@@ -112,6 +112,10 @@ class Account(Model):
     def reconciled_balance(self):
         return round(sum(self.transactions.filter('reconciled').amount), self._ynab.precision)
 
+    @property
+    def note(self):
+        return self._entity.note
+
 
 class Payee(Model):
     _entity_type = schema.Payee

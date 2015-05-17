@@ -40,6 +40,7 @@ class Account(Entity):
     lastReconciledBalance = FloatType()
     lastEnteredCheckNumber = FloatType()
     sortableIndex = IntType()
+    note = StringType()
 
 
 class PayeeLocation(Entity):
