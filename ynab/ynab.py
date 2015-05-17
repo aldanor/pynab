@@ -100,6 +100,7 @@ class YNAB(object):
         return instance
 
     def _init_data(self, data):
+        self.precision = 2
         self._accounts = Accounts._from_flat(self, data['accounts'])
         self._payees = Payees._from_flat(self, data['payees'])
         self._master_categories = MasterCategories._from_flat(self, data['masterCategories'])

@@ -102,11 +102,15 @@ class Account(Model):
 
     @property
     def balance(self):
-        return round(sum(self.transactions.amount), 3)
+        return round(sum(self.transactions.amount), self._ynab.precision)
 
     @property
     def cleared_balance(self):
-        return round(sum(self.transactions.filter('cleared', True).amount), 3)
+        return round(sum(self.transactions.filter('cleared').amount), self._ynab.precision)
+
+    @property
+    def reconciled_balance(self):
+        return round(sum(self.transactions.filter('reconciled').amount), self._ynab.precision)
 
 
 class Payee(Model):
@@ -195,7 +199,7 @@ class TransactionModel(Model):
 
     @property
     def amount(self):
-        return round(float(self._entity.amount or 0.), 3)
+        return round(float(self._entity.amount or 0.), self._ynab.precision)
 
     @property
     def category(self):
@@ -280,6 +284,7 @@ class Transaction(TransactionModel):
 class ModelCollection(collections.Sequence):
     _model_type = None
     _index_key = None
+    _NO_VALUE = object()
 
     def __init__(self, elements):
         self._elements = list(e for e in elements if e.is_valid)
@@ -318,8 +323,10 @@ class ModelCollection(collections.Sequence):
     def sort_by(self, field):
         self._elements = sorted(self._elements, key=lambda element: getattr(element, field))
 
-    def filter(self, field, value):
-        return type(self)(element for element in self if getattr(element, field) == value)
+    def filter(self, field, value=_NO_VALUE):
+        return type(self)(element for element in self
+                          if (value is not self._NO_VALUE and getattr(element, field) == value) or
+                          (value is self._NO_VALUE and getattr(element, field)))
 
 
 class Accounts(ModelCollection):
@@ -350,7 +357,7 @@ class Transactions(ModelCollection):
         amount = [t.amount for t in self]
         try:
             import numpy as np
-            return np.array(amount, dtype=np.float64)
+            return np.round(np.array(amount, dtype=np.float64), self._ynab.precision)
         except ImportError:
             return amount
 

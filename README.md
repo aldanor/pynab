@@ -18,11 +18,19 @@ Get the list of accounts:
 [<Account: Cash>, <Account: Checking>]
 ```
 
+Query the balance, the cleared balance and the reconciled balance for cash account:
+
+```python
+>>> cash = ynab.accounts['Cash']
+>>> cash.balance, cash.cleared_balance, cash.reconciled_balance
+(15.38, 24.38, 41.88)
+```
+
 Find the total of all reconciled cash transactions starting 2 weeks ago:
 
 ```python
 >>> cash = ynab.accounts['Cash']
->>> sum(cash.transactions.since('2 weeks ago').filter('reconciled', True).amount)
+>>> sum(cash.transactions.since('2 weeks ago').filter('reconciled').amount)
 -22.0
 ```
 
