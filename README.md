@@ -25,3 +25,10 @@ Find the total of all reconciled cash transactions starting 2 weeks ago:
 >>> sum(cash.transactions.since('2 weeks ago').filter('reconciled', True).amount)
 -22.0
 ```
+
+Find the average amount of all Tesco transactions in 2015:
+
+```python
+>>> ynab.payees['Tesco'].transactions.between('2015-01-01', '2015-12-31').amount.mean()
+-27.31176470588235
+```

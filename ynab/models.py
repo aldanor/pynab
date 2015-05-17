@@ -345,15 +345,28 @@ class Categories(ModelCollection):
 class Transactions(ModelCollection):
     _model_type = Transaction
 
-    def between(self, start=None, end=None):
+    @property
+    def amount(self):
+        amount = [t.amount for t in self]
+        try:
+            import numpy as np
+            return np.array(amount, dtype=np.float64)
+        except ImportError:
+            return amount
+
+    def _parse_date(self, string):
         parser = DateDataParser()
+        date = parser.get_date_data(string)['date_obj']
+        if date is None:
+            raise RuntimeError('Unable to parse date: {!r}'.format(string))
+        return date.date()
+
+    def between(self, start=None, end=None):
         transactions = list(self)
         if start is not None:
-            start = parser.get_date_data(start)['date_obj'].date()
-            transactions = [t for t in transactions if t.date >= start]
+            transactions = [t for t in transactions if t.date >= self._parse_date(start)]
         if end is not None:
-            end = parser.get_date_data(end)['date_obj'].date()
-            transactions = [t for t in transactions if t.end <= end]
+            transactions = [t for t in transactions if t.end <= self._parse_date(end)]
         return type(self)(transactions)
 
     def since(self, date):
