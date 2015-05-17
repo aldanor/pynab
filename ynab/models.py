@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
+
 import six
 import toolz
 import collections
@@ -7,6 +9,7 @@ from enum import Enum
 from dateparser.date import DateDataParser
 
 from . import schema
+from .util import force_encode
 
 
 class AccountType(Enum):
@@ -57,6 +60,7 @@ class Model(object):
 class Account(Model):
     _entity_type = schema.Account
 
+    @force_encode
     def __repr__(self):
         return '<Account: {}>'.format(self.name)
 
@@ -120,6 +124,7 @@ class Account(Model):
 class Payee(Model):
     _entity_type = schema.Payee
 
+    @force_encode
     def __repr__(self):
         return '<Payee: {}>'.format(self.name)
 
@@ -153,6 +158,7 @@ class CategoryModel(Model):
 class Category(CategoryModel):
     _entity_type = schema.SubCategory
 
+    @force_encode
     def __repr__(self):
         return '<Category: {}>'.format(self.full_name)
 
@@ -185,6 +191,7 @@ class MasterCategory(CategoryModel):
         self._categories = Categories(
             Category(ynab, category) for category in self._entity.subCategories or [])
 
+    @force_encode
     def __repr__(self):
         return '<MasterCategory: {}>'.format(self.name)
 
@@ -225,6 +232,7 @@ class TransactionModel(Model):
 class SubTransaction(TransactionModel):
     _entity_type = schema.SubTransaction
 
+    @force_encode
     def __repr__(self):
         return '<SubTransaction: {:.2f} ({})>'.format(
             self.amount, self.category.name if self.category else 'no category')
@@ -242,6 +250,7 @@ class Transaction(TransactionModel):
         self._sub_transactions = SubTransactions(
             SubTransaction(ynab, t) for t in self._entity.subTransactions or [])
 
+    @force_encode
     def __repr__(self):
         info = ''
         if self.category:
@@ -320,10 +329,10 @@ class ModelCollection(collections.Sequence):
         return [getattr(element, key) for element in self]
 
     def __repr__(self):
-        return repr(self._elements)
+        return repr(list(self))
 
     def __str__(self):
-        return str(self._elements)
+        return str(list(self))
 
     def by_id(self, id):
         return self._index.get(id, None)
