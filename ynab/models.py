@@ -217,6 +217,10 @@ class TransactionModel(Model):
     def transfer_transaction(self):
         return self._ynab.transactions.by_id(self._entity.transferTransactionId)
 
+    @property
+    def has_unresolved_conflicts(self):
+        return not self._entity.isResolvedConflict
+
 
 class SubTransaction(TransactionModel):
     _entity_type = schema.SubTransaction

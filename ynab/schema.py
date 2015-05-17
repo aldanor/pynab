@@ -72,6 +72,7 @@ class TransactionEntity(Entity):
     transferTransactionId = StringType()
     categoryId = StringType()
     targetAccountId = StringType()
+    isResolvedConflict = BooleanType()
 
 
 class SubTransaction(TransactionEntity):
