@@ -17,7 +17,7 @@ setup(
     version=version,
     url='http://github.com/aldanor/pynab',
     packages=['ynab'],
-    description='A simple API providing native Python access to YNAB data.',
+    description='A simple library designed to make it easy to access YNAB data from Python.',
     install_requires=[
         'six',
         'toolz',
