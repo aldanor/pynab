@@ -2,6 +2,22 @@
 
 A minimalistic library designed to provide native access to YNAB data from Python.
 
+# Install
+
+The simplest way is to install the latest version from PyPI index:
+
+```sh
+> pip install -U pynab
+```
+
+or install from the latest source:
+
+```sh
+git clone https://github.com/aldanor/pynab.git
+cd pynab
+python setup.py install
+```
+
 # Examples
 
 Load the shared YNAB budget:
