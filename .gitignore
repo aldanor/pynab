@@ -2,3 +2,5 @@
 *.log
 *.egg-info/
 *.tar.gz
+build/
+dist/
