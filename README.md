@@ -21,6 +21,7 @@ Get the list of accounts:
 Find the total of all reconciled cash transactions starting 2 weeks ago:
 
 ```python
->>> sum(ynab.accounts['Cash'].transactions.since('2 weeks ago').filter('reconciled', True).amount)
+>>> cash = ynab.accounts['Cash']
+>>> sum(cash.transactions.since('2 weeks ago').filter('reconciled', True).amount)
 -22.0
 ```
