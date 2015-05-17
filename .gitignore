@@ -1,3 +1,4 @@
 *.py[cod]
 *.log
 *.egg-info/
+*.tar.gz
