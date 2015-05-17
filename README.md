@@ -1,6 +1,6 @@
 # pYNAB
 
-A simple library designed to make it easy to access YNAB data from Python.
+A minimalistic library designed to provide native access to YNAB data from Python.
 
 # Examples
 
