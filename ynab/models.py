@@ -309,6 +309,8 @@ class ModelCollection(collections.Sequence):
 
     def __init__(self, elements):
         self._elements = list(e for e in elements if e.is_valid)
+
+        # keep a reverse index for faster id indexing
         self._index = {element.id: element for element in self._elements}
 
     @classmethod
@@ -320,7 +322,9 @@ class ModelCollection(collections.Sequence):
         return len(self._elements)
 
     def __getitem__(self, key):
+        # try behave both like a list and like a dict with string keys
         if isinstance(key, six.string_types):
+            # _index_key defines the attribute name that will be matched
             if self._index_key is not None:
                 for element in self:
                     if getattr(element, self._index_key) == key:
@@ -330,21 +334,53 @@ class ModelCollection(collections.Sequence):
             return self._elements[key]
 
     def __getattr__(self, key):
+        # if the attribute is not found, propagate it to children
         return [getattr(element, key) for element in self]
 
     def __repr__(self):
+        # list(self) due to py2/py3 unicode problems
         return repr(list(self))
 
     def __str__(self):
+        # list(self) due to py2/py3 unicode problems
         return str(list(self))
 
     def by_id(self, id):
+        """
+        Retrieve an element by entity ID. Returns None if not found.
+
+        Parameters
+        ----------
+        id : str
+        """
         return self._index.get(id, None)
 
     def sort_by(self, field):
+        """
+        In-place sort by a specified field.
+
+        Parameters
+        ----------
+        field : string
+        """
         self._elements = sorted(self._elements, key=lambda element: getattr(element, field))
 
     def filter(self, field, value=_NO_VALUE):
+        """
+        Filters the collection by field value of child elements.
+
+        Parameters
+        ----------
+        field : str
+            Name of the attribute to be matched.
+        value : object (optional)
+            If specified, the values will be matched to this value by equality. Otherwise,
+            the values will be converted to booleans and matched to True.
+        Returns
+        -------
+        collection : ModelCollection
+            The return value is always of the same type as the original object.
+        """
         return type(self)(element for element in self
                           if (value is not self._NO_VALUE and getattr(element, field) == value) or
                           (value is self._NO_VALUE and getattr(element, field)))
@@ -377,9 +413,11 @@ class Transactions(ModelCollection):
     def amount(self):
         amount = [t.amount for t in self]
         try:
+            # try to return a numpy array if possible
             import numpy as np
             return np.round(np.array(amount, dtype=np.float64), self._ynab.precision)
         except ImportError:
+            # return a simple list otherwise
             return amount
 
     def _parse_date(self, string):
@@ -390,6 +428,21 @@ class Transactions(ModelCollection):
         return date.date()
 
     def between(self, start=None, end=None):
+        """
+        Select all transactions between the specified dates.
+
+        The dates may be specified as date objects, standard date strings ('2015-01-15') or
+        human-readable strings ('two weeks ago').
+
+        Parameters
+        ----------
+        start : date or str (optional)
+        end : date or str (optional)
+
+        Returns
+        -------
+        transactions : Transactions
+        """
         transactions = list(self)
         if start is not None:
             transactions = [t for t in transactions if t.date >= self._parse_date(start)]
@@ -398,9 +451,37 @@ class Transactions(ModelCollection):
         return type(self)(transactions)
 
     def since(self, date):
+        """
+        Select all transactions since the specified date.
+
+        The date may be specified as date object, standard date string ('2015-01-15') or
+        a human-readable string ('two weeks ago').
+
+        Parameters
+        ----------
+        start : date or str
+
+        Returns
+        -------
+        transactions : Transactions
+        """
         return self.between(start=date)
 
     def till(self, date):
+        """
+        Select all transactions before and including the specified date.
+
+        The date may be specified as date object, standard date string ('2015-01-15') or
+        a human-readable string ('two weeks ago').
+
+        Parameters
+        ----------
+        start : date or str
+
+        Returns
+        -------
+        transactions : Transactions
+        """
         return self.between(end=date)
 
 
