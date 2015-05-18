@@ -4,8 +4,10 @@ import re
 import os
 import json
 import string
+import warnings
 
 from .models import Accounts, Payees, MasterCategories, Transactions, Categories
+from .schema import Device
 
 
 class YNAB(object):
@@ -43,19 +45,23 @@ class YNAB(object):
         devices = []
         for device_file in device_files:
             with open(os.path.join(devices_folder, device_file), 'r') as f:
-                device_data = json.load(f)
-            guid = device_data['deviceGUID']
+                device_data = Device.from_flat(json.load(f))
+            guid = device_data.deviceGUID
             budget_file = os.path.join(data_folder, guid, 'Budget.yfull')
             if os.path.isfile(budget_file):
                 devices.append({
-                    'id': device_data['shortDeviceId'],
-                    'name': device_data['friendlyName'],
+                    'id': device_data.shortDeviceId,
+                    'name': device_data.friendlyName,
                     'file': budget_file,
-                    'mtime': os.stat(budget_file).st_mtime
+                    'mtime': os.stat(budget_file).st_mtime,
+                    'full': device_data.hasFullKnowledge
                 })
         if not devices:
             raise RuntimeError('No valid devices found for {!r} at: {}'.format(budget, path))
         if device is None:
+            devices = [d for d in devices if d['full']]
+            if not devices:
+                raise RuntimeError('No devices with full knowledge found')
             device = max(devices, key=lambda d: d['mtime'])
         else:
             try:
@@ -63,6 +69,8 @@ class YNAB(object):
                     device = [d for d in devices if d['id'] == device].pop()
                 else:
                     device = [d for d in devices if d['name'] == device].pop()
+                if not device['full']:
+                    warnings.warn('Device {!r} does not have full knowledge'.format(d['name']))
             except IndexError:
                 raise RuntimeError('No device {!r} for {!r} at: {}'.format(device, budget, path))
         self._path = device['file']

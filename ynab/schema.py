@@ -5,6 +5,21 @@ from schematics.types import BooleanType, StringType, FloatType, DateType, IntTy
 from schematics.types.compound import ListType, ModelType
 
 
+class Device(Model):
+    highestDataVersionImported = StringType()
+    friendlyName = StringType()
+    hasFullKnowledge = BooleanType()
+    lastDataVersionFullyKnown = StringType()
+    shortDeviceId = StringType()
+    formatVersion = StringType()
+    knowledgeInFullBudgetFile = StringType()
+    YNABVersion = StringType()
+    deviceGUID = StringType()
+    deviceType = StringType()
+    knowledge = StringType()
+    deviceVersion = StringType()
+
+
 class Entity(Model):
     entityId = StringType()
     entityType = StringType()
