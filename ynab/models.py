@@ -46,7 +46,7 @@ class Model(object):
     @classmethod
     @toolz.curry
     def _from_flat(cls, ynab, data):
-        return cls(ynab, cls._entity_type.from_flat(data))
+        return cls(ynab, cls._entity_type(data, strict=False))
 
     @property
     def id(self):

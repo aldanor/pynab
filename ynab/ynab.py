@@ -45,7 +45,7 @@ class YNAB(object):
         devices = []
         for device_file in device_files:
             with open(os.path.join(devices_folder, device_file), 'r') as f:
-                device_data = Device.from_flat(json.load(f))
+                device_data = Device(json.load(f), strict=False)
             guid = device_data.deviceGUID
             budget_file = os.path.join(data_folder, guid, 'Budget.yfull')
             if os.path.isfile(budget_file):
