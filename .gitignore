@@ -4,3 +4,4 @@
 *.tar.gz
 build/
 dist/
+/release.sh
