@@ -182,6 +182,10 @@ class Category(CategoryModel):
     def full_name(self):
         return '{}/{}'.format(self.master_category.name, self.name)
 
+    @property
+    def transactions(self):
+        return self._ynab.transactions.filter('category', self)
+
 
 class MasterCategory(CategoryModel):
     _entity_type = schema.MasterCategory
