@@ -447,7 +447,7 @@ class Transactions(ModelCollection):
         if start is not None:
             transactions = [t for t in transactions if t.date >= self._parse_date(start)]
         if end is not None:
-            transactions = [t for t in transactions if t.end <= self._parse_date(end)]
+            transactions = [t for t in transactions if t.date <= self._parse_date(end)]
         return type(self)(transactions)
 
     def since(self, date):
