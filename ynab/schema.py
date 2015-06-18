@@ -62,6 +62,7 @@ class PayeeLocation(Entity):
     parentPayeeId = StringType()
     latitude = FloatType()
     longitude = FloatType()
+    isResolvedConflict = BooleanType()
 
 
 class PayeeRenameConditions(Entity):
