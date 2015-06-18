@@ -30,7 +30,7 @@ class YNAB(object):
             the budget file will be selected.
         """
         root = os.path.abspath(os.path.expanduser(path))
-        pattern = re.compile('^' + budget + r'~[A-F0-9]{8}\.ynab4$')
+        pattern = re.compile('^' + re.escape(budget) + r'~[A-F0-9]{8}\.ynab4$')
         folders = list(filter(pattern.match, os.listdir(root)))
         if not folders:
             raise RuntimeError('Budget {!r} not found at: {}'.format(budget, path))
