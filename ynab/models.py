@@ -487,3 +487,54 @@ class Transactions(ModelCollection):
 
 class SubTransactions(ModelCollection):
     _model_type = SubTransaction
+
+
+class BudgetMetaData(Model):
+    _entity_type = schema.BudgetMetaData
+
+    _PRECISIONS = {
+        # TODO: add more currencies with other than 2 decimal places.
+        'ja_JP': 0,
+    }
+
+    @property
+    def is_valid(self):
+        # BudgetMetaData is not deleteable, so it is always valid.
+        return True
+
+    @property
+    def currency_locale(self):
+        return self._entity.currencyLocale
+
+    @property
+    def date_locale(self):
+        return self._entity.dateLocale
+
+    @property
+    def budget_type(self):
+        return self._entity.budgetType
+
+    @property
+    def is_strict(self):
+        # Is this used?
+        return self._entity.strictBudget
+
+    @property
+    def precision(self):
+        return self._PRECISIONS.get(self.currency_locale, 2)
+
+
+class FileMetaData(Model):
+    _entity_type = schema.FileMetaData
+
+    @property
+    def current_knowledge(self):
+        return self._entity.currentKnowledge
+
+    @property
+    def id(self):
+        return None
+
+    @property
+    def is_valid(self):
+        return True

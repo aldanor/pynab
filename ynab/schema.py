@@ -24,10 +24,27 @@ class Entity(Model):
     entityId = StringType()
     entityType = StringType()
     entityVersion = StringType()
+
+
+class BudgetMetaData(Entity):
+    currencyLocale = StringType()
+    currencyISOSymbol = StringType()
+    dateLocale = StringType()
+    budgetType = StringType()
+    strictBudget = StringType()
+
+
+class FileMetaData(Model):
+    budgetDataVersion = StringType()
+    currentKnowledge = StringType()
+    entityType = StringType()
+
+
+class DeletableEntity(Entity):
     isTombstone = BooleanType()
 
 
-class Category(Entity):
+class Category(DeletableEntity):
     name = StringType()
     sortableIndex = IntType()
     type = StringType()
@@ -46,7 +63,7 @@ class MasterCategory(Category):
     subCategories = ListType(ModelType(SubCategory))
 
 
-class Account(Entity):
+class Account(DeletableEntity):
     accountName = StringType()
     accountType = StringType()
     hidden = BooleanType()
@@ -58,20 +75,20 @@ class Account(Entity):
     note = StringType()
 
 
-class PayeeLocation(Entity):
+class PayeeLocation(DeletableEntity):
     parentPayeeId = StringType()
     latitude = FloatType()
     longitude = FloatType()
     isResolvedConflict = BooleanType()
 
 
-class PayeeRenameConditions(Entity):
+class PayeeRenameConditions(DeletableEntity):
     parentPayeeId = StringType()
     operand = StringType()
     operator = StringType()
 
 
-class Payee(Entity):
+class Payee(DeletableEntity):
     name = StringType()
     enabled = BooleanType()
     autoFillAmount = FloatType()
@@ -82,7 +99,7 @@ class Payee(Entity):
     locations = ListType(ModelType(PayeeLocation))
 
 
-class TransactionEntity(Entity):
+class TransactionEntity(DeletableEntity):
     memo = StringType()
     amount = FloatType()
     transferTransactionId = StringType()
