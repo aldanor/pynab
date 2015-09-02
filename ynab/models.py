@@ -493,8 +493,16 @@ class BudgetMetaData(Model):
     _entity_type = schema.BudgetMetaData
 
     _PRECISIONS = {
-        # TODO: add more currencies with other than 2 decimal places.
+        'ar_BH': 3,
+        'ar_EG': 3,
+        'ar_JO': 3,
+        'ar_KW': 3,
+        'ar_TN': 3,
+        'id_ID': 0,
+        'is_IS': 0,
         'ja_JP': 0,
+        'ko_KR': 0,
+        'uz_Latn_UZ': 0,
     }
 
     @property
