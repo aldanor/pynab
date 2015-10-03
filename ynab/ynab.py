@@ -6,7 +6,8 @@ import json
 import string
 import warnings
 
-from .models import Accounts, Payees, MasterCategories, Transactions, Categories, BudgetMetaData, FileMetaData
+from .models import (Accounts, BudgetMetaData, Categories, FileMetaData,
+                     MasterCategories, Payees, Transactions)
 from .schema import Device
 
 
