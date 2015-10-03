@@ -6,7 +6,8 @@ import json
 import string
 import warnings
 
-from .models import Accounts, Payees, MasterCategories, Transactions, Categories
+from .models import (Accounts, BudgetMetaData, Categories, FileMetaData,
+                     MasterCategories, Payees, Transactions)
 from .schema import Device
 
 
@@ -108,12 +109,17 @@ class YNAB(object):
         return instance
 
     def _init_data(self, data):
-        self.precision = 2
+        # TODO:
+        # - scheduledTransactions
+        # - accountMappings
+        # - monthlyBudgets
         self._accounts = Accounts._from_flat(self, data['accounts'])
         self._payees = Payees._from_flat(self, data['payees'])
         self._master_categories = MasterCategories._from_flat(self, data['masterCategories'])
         self._transactions = Transactions._from_flat(self, data['transactions'])
         self._transactions.sort_by('date')
+        self._meta_data = BudgetMetaData._from_flat(self, data['budgetMetaData'])
+        self._file_meta_data = FileMetaData._from_flat(self, data['fileMetaData'])
 
     @property
     def accounts(self):
@@ -134,3 +140,11 @@ class YNAB(object):
     @property
     def transactions(self):
         return self._transactions
+
+    @property
+    def meta_data(self):
+        return self._meta_data
+
+    @property
+    def precision(self):
+        return self._meta_data.precision
